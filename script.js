@@ -25,7 +25,7 @@ async function fetchAndDisplayPacks() {
         // Loop through each pack and create a checkbox
         for (const [key, pack] of Object.entries(data.packs)) {
             const label = document.createElement('label');
-            label.innerHTML = `<input type="checkbox" value="${key}" ${pack.official ? 'checked' : ''}> ${pack.name}`;
+            label.innerHTML = `<input type="checkbox" value="${key}" checked> ${pack.name}`;
             packsList.appendChild(label); // Add checkbox to packs list
             packsList.appendChild(document.createElement('br')); // Line break
         }
@@ -56,6 +56,12 @@ function getSelectedPacks(data) {
 async function drawBlackCard() {
     const data = await fetchData(); // Fetch card data
     const { blackCards } = getSelectedPacks(data); // Get black cards from selected packs
+    
+    if (blackCards.length === 0) {
+        alert("No black cards available from selected packs."); // Alert if no cards are available
+        return;
+    }
+
     const randomCard = blackCards[Math.floor(Math.random() * blackCards.length)]; // Select a random black card
 
     // Display the drawn black card
@@ -67,6 +73,12 @@ async function drawBlackCard() {
 async function drawWhiteCards() {
     const data = await fetchData(); // Fetch card data
     const { whiteCards } = getSelectedPacks(data); // Get white cards from selected packs
+    
+    if (whiteCards.length === 0) {
+        alert("No white cards available from selected packs."); // Alert if no cards are available
+        return;
+    }
+
     let drawnCards = []; // Array to hold drawn white cards
 
     // Create a copy of the white cards array to avoid modifying the original
