@@ -1,101 +1,102 @@
-// URL for the new JSON file
-const url = 'https://raw.githubusercontent.com/crhallberg/json-against-humanity/refs/heads/latest/cah-all-compact.json';
+// URL for the JSON file
+const url = 'https://raw.githubusercontent.com/crhallberg/json-against-humanity/refs/heads/latest/web/CAHDeck.js';
 
-// Asynchronously fetch card data from the specified URL
+// Fetch data from the URL
 async function fetchData() {
     try {
-        const response = await fetch(url); // Attempt to fetch data
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`); // Handle HTTP errors
-        }
-        return await response.json(); // Return the entire data set as JSON
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        const text = await response.text();
+        return JSON.parse(text.replace(/^var CAHDeck = /, '').replace(/;$/, '')); // Convert from JS to JSON
     } catch (error) {
-        console.error('Error fetching data:', error); // Log any errors that occur during fetch
-        alert('Failed to fetch card data. Please try again later.'); // Alert user about the fetch failure
+        console.error('Error fetching data:', error);
+        alert('Failed to fetch card data. Please try again later.');
     }
 }
 
-// Fetch and display card packs
+// Display card packs
 async function fetchAndDisplayPacks() {
-    const data = await fetchData(); // Fetch card data
-    if (data && data.packs) {
+    const data = await fetchData();
+    if (data) {
         const packsList = document.getElementById('packsList');
-        packsList.innerHTML = ''; // Clear previous content
+        packsList.innerHTML = '';
 
-        // Loop through each pack and create a checkbox
-        for (const [key, pack] of Object.entries(data.packs)) {
+        for (const [key, pack] of Object.entries(data)) {
             const label = document.createElement('label');
             label.innerHTML = `<input type="checkbox" value="${key}" checked> ${pack.name}`;
-            packsList.appendChild(label); // Add checkbox to packs list
-            packsList.appendChild(document.createElement('br')); // Line break
+            packsList.appendChild(label);
+            packsList.appendChild(document.createElement('br'));
         }
     }
 }
 
-// Get selected card packs based on user input
+// Get selected card packs
 function getSelectedPacks(data) {
-    // Retrieve selected pack names from the checkboxes
     const selectedPacks = Array.from(document.querySelectorAll('#packSelection input:checked')).map(input => input.value);
-    const blackCards = []; // Array to hold selected black cards
-    const whiteCards = []; // Array to hold selected white cards
+    const blackCards = [];
+    const whiteCards = [];
 
-    // Loop through selected packs to find and collect their cards
     selectedPacks.forEach(pack => {
-        const packData = data.packs[pack]; // Access the pack data by its key
+        const packData = data[pack];
         if (packData) {
-            // Retrieve black and white cards using the indexes from the pack
-            blackCards.push(...packData.black.map(index => data.black[index])); // Retrieve black cards by index
-            whiteCards.push(...packData.white.map(index => data.white[index])); // Retrieve white cards by index
+            blackCards.push(...packData.black);
+            whiteCards.push(...packData.white);
         }
     });
 
-    return { blackCards, whiteCards }; // Return the arrays of selected cards
+    return { blackCards, whiteCards };
 }
 
-// Asynchronously draw a random black card from selected packs
+// Draw a random black card
 async function drawBlackCard() {
-    const data = await fetchData(); // Fetch card data
-    const { blackCards } = getSelectedPacks(data); // Get black cards from selected packs
+    const data = await fetchData();
+    const { blackCards } = getSelectedPacks(data);
     
     if (blackCards.length === 0) {
-        alert("No black cards available from selected packs."); // Alert if no cards are available
+        alert("No black cards available from selected packs.");
         return;
     }
 
-    const randomCard = blackCards[Math.floor(Math.random() * blackCards.length)]; // Select a random black card
-
-    // Display the drawn black card
+    const randomCard = blackCards[Math.floor(Math.random() * blackCards.length)];
     document.getElementById('cards').innerHTML = `<div class="card">${randomCard.text}</div>`;
-    showCards(); // Show the drawn card
+    showCards();
 }
 
-// Asynchronously draw seven random white cards from selected packs
+// Draw seven random white cards
 async function drawWhiteCards() {
-    const data = await fetchData(); // Fetch card data
-    const { whiteCards } = getSelectedPacks(data); // Get white cards from selected packs
+    const data = await fetchData();
+    const { whiteCards } = getSelectedPacks(data);
     
     if (whiteCards.length === 0) {
-        alert("No white cards available from selected packs."); // Alert if no cards are available
+        alert("No white cards available from selected packs.");
         return;
     }
 
-    let drawnCards = []; // Array to hold drawn white cards
-
-    // Create a copy of the white cards array to avoid modifying the original
+    let drawnCards = [];
     let remainingWhiteCards = [...whiteCards];
 
-    // Draw seven random white cards
     for (let i = 0; i < 7; i++) {
-        const randomIndex = Math.floor(Math.random() * remainingWhiteCards.length); // Get a random index
-        drawnCards.push(remainingWhiteCards[randomIndex]); // Add the drawn card to the array
-        // Remove the drawn card to avoid repeats
+        const randomIndex = Math.floor(Math.random() * remainingWhiteCards.length);
+        drawnCards.push(remainingWhiteCards[randomIndex].text);
         remainingWhiteCards.splice(randomIndex, 1);
     }
 
-    // Display the drawn white cards
     document.getElementById('cards').innerHTML = `<div class="white-cards">${drawnCards.map(card => `<div class="card">${card}</div>`).join('')}</div>`;
-    showCards(); // Show the drawn cards
+    showCards();
 }
 
-// Initialize the app
-fetchAndDisplayPacks(); // Call the function to display packs
+// Show and hide elements for drawing cards
+function showCards() {
+    document.getElementById('menu').style.display = 'none';
+    document.getElementById('cards').style.display = 'block';
+    document.getElementById('backButton').style.display = 'block';
+}
+
+function showMenu() {
+    document.getElementById('menu').style.display = 'block';
+    document.getElementById('cards').style.display = 'none';
+    document.getElementById('backButton').style.display = 'none';
+}
+
+// Initialise the packs list on load
+fetchAndDisplayPacks();
