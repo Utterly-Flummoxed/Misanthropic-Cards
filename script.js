@@ -1,3 +1,5 @@
+// Version 1
+
 const url = 'https://raw.githubusercontent.com/crhallberg/json-against-humanity/master/cah-all-full.json';
 
 async function fetchData() {
