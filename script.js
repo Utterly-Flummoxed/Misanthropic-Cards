@@ -15,6 +15,23 @@ async function fetchData() {
     }
 }
 
+// Fetch and display card packs
+async function fetchAndDisplayPacks() {
+    const data = await fetchData(); // Fetch card data
+    if (data && data.packs) {
+        const packsList = document.getElementById('packsList');
+        packsList.innerHTML = ''; // Clear previous content
+
+        // Loop through each pack and create a checkbox
+        for (const [key, pack] of Object.entries(data.packs)) {
+            const label = document.createElement('label');
+            label.innerHTML = `<input type="checkbox" value="${key}" ${pack.official ? 'checked' : ''}> ${pack.name}`;
+            packsList.appendChild(label); // Add checkbox to packs list
+            packsList.appendChild(document.createElement('br')); // Line break
+        }
+    }
+}
+
 // Get selected card packs based on user input
 function getSelectedPacks(data) {
     // Retrieve selected pack names from the checkboxes
@@ -67,3 +84,6 @@ async function drawWhiteCards() {
     document.getElementById('cards').innerHTML = `<div class="white-cards">${drawnCards.map(card => `<div class="card">${card}</div>`).join('')}</div>`;
     showCards(); // Show the drawn cards
 }
+
+// Initialize the app
+fetchAndDisplayPacks(); // Call the function to display packs
